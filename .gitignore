@@ -1,0 +1,18 @@
+/.vs
+/.vscode
+
+# Build and install directories
+/build_*
+/install_*
+/cmake-build-debug
+
+/thirdparty/googletest-release-1.8.1
+/thirdparty/opencv-4.0.1
+/thirdparty/install_*
+/thirdparty/*.zip
+/thirdparty/*.tar.gz
+
+
+*.pyc
+
+tests.xml
