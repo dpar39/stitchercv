@@ -306,6 +306,7 @@ class Builder(object):
             '-DBUILD_opencv_java=OFF',
             '-DBUILD_opencv_python=OFF',
             '-DBUILD_opencv_python2=OFF',
+            '-DOPENCV_ENABLE_NONFREE=ON',
             '-DOPENCV_EXTRA_MODULES_PATH=' + opencvcontrib_extract_dir + '/modules'
         ]
 
