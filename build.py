@@ -23,6 +23,7 @@ except ImportError:   # Fall back to Python 2's urllib2
 
 # Configuration
 OPENCV_SRC_URL = 'https://github.com/opencv/opencv/archive/4.0.1.zip'
+OPENCVCONTRIB_SRC_URL = 'https://github.com/opencv/opencv_contrib/archive/4.0.1.zip'
 GMOCK_SRC_URL = 'https://github.com/google/googletest/archive/release-1.8.1.zip'
 
 IS_WINDOWS = sys.platform == 'win32'
@@ -258,15 +259,26 @@ class Builder(object):
             lib_files = glob.glob(self._third_party_install_dir + '/lib/libopencv_*.a')
             if len(lib_files) >= len(ocv_build_modules):
                 return
-        # Download OpenCV sources if not done yet
-        opencv_src_pkg = self.download_third_party_lib(OPENCV_SRC_URL)
+        # Download opencv sources if not done yet
+        opencv_src_pkg = self.download_third_party_lib(OPENCV_SRC_URL, 'opencv.zip')
+
+        # Download opencv_contrib sources if not done yet
+        opencvcontrib_src_pkg = self.download_third_party_lib(OPENCVCONTRIB_SRC_URL, 'opencv_contrib.zip')
+        
         # Get the file prefix for OpenCV
         opencv_extract_dir = self.get_third_party_lib_dir('opencv-')
+
+        opencvcontrib_extract_dir = self.get_third_party_lib_dir('opencv_contrib-')
 
         if opencv_extract_dir is None:
             # Extract the source files
             self.extract_third_party_lib(opencv_src_pkg)
-            opencv_extract_dir = self.get_third_party_lib_dir('opencv')
+            opencv_extract_dir = self.get_third_party_lib_dir('opencv-')
+
+        if opencvcontrib_extract_dir is None:
+            # Extract the source files
+            self.extract_third_party_lib(opencvcontrib_src_pkg)
+            opencvcontrib_extract_dir = self.get_third_party_lib_dir('opencv_contrib-')
 
         cmake_extra_defs = [
             '-DCMAKE_INSTALL_PREFIX=' + self._third_party_install_dir,
@@ -282,7 +294,6 @@ class Builder(object):
             '-DBUILD_PNG=ON',
             '-DBUILD_JPEG=ON',
             '-DBUILD_TIFF=ON',
-            '-DBUILD_opencv_apps=OFF',
             '-DBUILD_WITH_DEBUG_INFO=OFF',
             '-DBUILD_DOCS=OFF',
             '-DBUILD_TESTS=OFF',
@@ -291,16 +302,19 @@ class Builder(object):
             '-DWITH_VFW=OFF',
             '-DWITH_OPENEXR=OFF',
             '-DWITH_WEBP=OFF',
+            '-DBUILD_opencv_apps=OFF',
             '-DBUILD_opencv_java=OFF',
             '-DBUILD_opencv_python=OFF',
-            '-DBUILD_opencv_python2=OFF']
+            '-DBUILD_opencv_python2=OFF',
+            '-DOPENCV_EXTRA_MODULES_PATH=' + opencvcontrib_extract_dir + '/modules'
+        ]
 
         cmake_extra_defs += [
             '-DBUILD_TBB=ON',
-            '-DBUILD_LIST=stitching,imgproc,imgcodecs,highgui,videoio'
+            '-DBUILD_LIST=stitching,imgproc,imgcodecs,highgui,videoio,xfeatures2d'
         ]
         if IS_WINDOWS:
-            cmake_extra_defs += ['-DBUILD_WITH_STATIC_CRT=ON', '-DUSE_MSVC_SSE=OFF']
+            cmake_extra_defs += ['-DBUILD_WITH_STATIC_CRT=ON']
 
         # Clean and create the build directory
         build_dir = self.build_dir_name(opencv_extract_dir)
