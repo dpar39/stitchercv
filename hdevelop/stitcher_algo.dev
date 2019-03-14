@@ -1,15 +1,887 @@
-4 3
-587823232
+198 3
+934320850
+comment 0 0 1 0 0 3 0 1
+* This example program shows how 128 images of the interior of a church can be
+This example program shows how 128 images of the interior of a church can be
+comment 0 0 1 0 0 3 0 1
+* combined into a mosaic that covers a 360x130 degree view.  The images were acquired
+combined into a mosaic that covers a 360x130 degree view.  The images were acquired
+comment 0 0 1 0 0 3 0 0
+* with a camera in which the exposure and white balance were set to automatic.
+with a camera in which the exposure and white balance were set to automatic.
+comment 0 0 1 0 0 3 0 0
+* Therefore, there are very large brightness and color differences between the images.
+Therefore, there are very large brightness and color differences between the images.
+comment 0 0 1 0 0 3 0 0
+* Hence, adjust_mosaic_images is used to align the images radiometrically.
+Hence, adjust_mosaic_images is used to align the images radiometrically.
+comment 0 0 1 0 0 3 0 1
+* Furthermore, blending is used to hide the transitions between the individual
+Furthermore, blending is used to hide the transitions between the individual
+comment 0 0 1 0 0 3 0 1
+* images that make up the mosaic.
+images that make up the mosaic.
+dev_update_pc 0 0 1 0 0 2 0 0
+dev_update_pc ('off')
+'off'
+dev_update_window 0 0 1 0 0 2 0 0
+dev_update_window ('off')
+'off'
+dev_update_var 0 0 1 0 0 2 0 0
+dev_update_var ('off')
+'off'
+dev_close_window 0 0 0 0 0 2 0 0
+dev_close_window ()
+dev_open_window 0 0 5 1 0 2 0 0
+`dev_open_window (0, 0, 1080, 1080, 'black', WindowHandle)
+0
+0
+1080
+1080
+'black'
+WindowHandle
+dev_set_part 0 0 4 0 0 2 0 0
+dev_set_part (0, 0, 647, 1955)
+0
+0
+647
+1955
+get_system 0 0 1 1 0 1 0 0
+get_system ('operating_system', OS)
+'operating_system'
+OS
+ifelse 0 0 1 0 0 3 0 0
+if (OS{0:2}='Win')
+OS{0:2}='Win'
+set_font 0 0 2 0 1 1 0 0
+    set_font (WindowHandle, '-Courier New-16-*-*-*-*-1-')
+WindowHandle
+'-Courier New-16-*-*-*-*-1-'
+else 0 0 0 0 0 3 15 0
+else
+set_font 0 0 2 0 1 1 0 0
+    set_font (WindowHandle, '-*-courier-bold-r-normal--20-*-*-*-*-*-iso8859-1')
+WindowHandle
+'-*-courier-bold-r-normal--20-*-*-*-*-*-iso8859-1'
+endif 0 0 0 0 0 3 17 0
+endif
+dev_set_color 0 0 1 0 0 2 0 0
+dev_set_color ('yellow')
+'yellow'
+set_tposition 0 0 3 0 0 1 0 0
+set_tposition (WindowHandle, 20, 20)
+WindowHandle
+20
+20
+write_string 0 0 2 0 0 1 0 0
+write_string (WindowHandle, 'Reading images...')
+WindowHandle
+'Reading images...'
+comment 0 0 1 0 0 3 0 1
+* Read the 128 images that make up the mosaic.
+Read the 128 images that make up the mosaic.
+gen_empty_obj 0 1 0 0 0 1 0 0
+gen_empty_obj (Images)
+Images
+for 0 0 3 1 0 3 0 0
+`for J := 0 to 3 by 1
+0
+3
+1
+J
+assign 0 0 1 1 1 3 0 0
+`    image_file := 'K:/GITHUB/stitchcv/thirdparty/SimplePanoStitcher/sample/'+ J$'03d' + '.png'
+'K:/GITHUB/stitchcv/thirdparty/SimplePanoStitcher/sample/'+ J$'03d' + '.png'
+image_file
+read_image 0 1 1 0 1 1 0 0
+`    read_image (Image, image_file)
+Image
+image_file
+concat_obj 2 1 0 0 1 1 0 0
+    concat_obj (Images, Image, Images)
+Images
+Image
+Images
+endfor 0 0 0 0 0 3 25 0
+endfor
+get_image_pointer1 1 0 0 4 0 1 0 0
+get_image_pointer1 (Image, Pointer, Type, Width, Height)
+Image
+Pointer
+Type
+Width
+Height
 comment 0 0 1 0 0 6 0 0
 * 
 
+assign 0 0 1 1 0 3 0 0
+`From := [2,3,4]
+[2,3,4]
+From
+assign 0 0 1 1 0 3 0 0
+`To := [1,2,3]
+[1,2,3]
+To
 comment 0 0 1 0 0 6 0 0
 * 
 
-read_image 0 1 1 0 0 1 0 0
-`read_image(I, 'K:/GITHUB/stitchcv/test/data/000.jpg')
-I
-'K:/GITHUB/stitchcv/test/data/000.jpg'
+comment 0 0 1 0 0 3 0 1
+* Initialize the data that is required for the self-calibration.
+Initialize the data that is required for the self-calibration.
+assign 0 0 1 1 0 3 0 0
+HomMatrices2D := []
+[]
+HomMatrices2D
+assign 0 0 1 1 0 3 0 0
+Rows1 := []
+[]
+Rows1
+assign 0 0 1 1 0 3 0 0
+Cols1 := []
+[]
+Cols1
+assign 0 0 1 1 0 3 0 0
+Rows2 := []
+[]
+Rows2
+assign 0 0 1 1 0 3 0 0
+Cols2 := []
+[]
+Cols2
+assign 0 0 1 1 0 3 0 0
+NumMatches := []
+[]
+NumMatches
 comment 0 0 1 0 0 6 0 0
 * 
 
+assign 0 0 1 1 0 3 0 0
+`overlap:= ceil(0.18*Width)
+ceil(0.18*Width)
+overlap
+gen_rectangle1 0 1 4 0 0 1 0 0
+`gen_rectangle1(DF, 0,0, Height, overlap)
+DF
+0
+0
+Height
+overlap
+gen_rectangle1 0 1 4 0 0 1 0 0
+`gen_rectangle1(DT, 0, Width-overlap, Height, Width)
+DT
+0
+Width-overlap
+Height
+Width
+comment 0 0 1 0 0 6 0 0
+* 
+
+for 0 0 3 1 0 3 0 0
+for J := 0 to |From|-1 by 1
+0
+|From|-1
+1
+J
+comment 0 0 1 0 1 3 0 1
+    * Select the images to match.
+Select the images to match.
+select_obj 1 1 1 0 1 1 0 0
+    select_obj (Images, ImageF, From[J])
+Images
+ImageF
+From[J]
+select_obj 1 1 1 0 1 1 0 0
+    select_obj (Images, ImageT, To[J])
+Images
+ImageT
+To[J]
+comment 0 0 1 0 1 6 0 0
+`    
+
+change_domain 2 1 0 0 1 1 0 0
+`    change_domain(ImageF, DF, ImageF)
+ImageF
+DF
+ImageF
+change_domain 2 1 0 0 1 1 0 0
+`    change_domain(ImageT, DT, ImageT)    
+ImageT
+DT
+ImageT
+comment 0 0 1 0 1 6 0 0
+`    
+
+comment 0 0 1 0 1 3 0 1
+    * Perform the point extraction of the images.
+Perform the point extraction of the images.
+points_foerstner 1 0 7 10 1 1 0 0
+    points_foerstner (ImageF, 1, 2, 3, 50, 0.1, 'gauss', 'true', RowsF, ColsF, _, _, _, _, _, _, _, _)
+ImageF
+1
+2
+3
+50
+0.1
+'gauss'
+'true'
+RowsF
+ColsF
+_
+_
+_
+_
+_
+_
+_
+_
+points_foerstner 1 0 7 10 1 1 0 0
+    points_foerstner (ImageT, 1, 2, 3, 50, 0.1, 'gauss', 'true', RowsT, ColsT, _, _, _, _, _, _, _, _)
+ImageT
+1
+2
+3
+50
+0.1
+'gauss'
+'true'
+RowsT
+ColsT
+_
+_
+_
+_
+_
+_
+_
+_
+concat_obj 2 1 0 0 1 1 0 0
+    concat_obj (ImageT, ImageF, ImageTF)
+ImageT
+ImageF
+ImageTF
+tile_images_offset 1 1 8 0 1 1 0 0
+    tile_images_offset (ImageTF, TiledImage, [0,0], [0,Width+20], [-1,-1], [-1,-1], [-1,-1], [-1,-1], 2*Width+20, Height)
+ImageTF
+TiledImage
+[0,0]
+[0,Width+20]
+[-1,-1]
+[-1,-1]
+[-1,-1]
+[-1,-1]
+2*Width+20
+Height
+gen_cross_contour_xld 0 1 4 0 1 1 0 0
+    gen_cross_contour_xld (PointsF, RowsF, ColsF+Width+20, 6, rad(45))
+PointsF
+RowsF
+ColsF+Width+20
+6
+rad(45)
+gen_cross_contour_xld 0 1 4 0 1 1 0 0
+    gen_cross_contour_xld (PointsT, RowsT, ColsT, 6, rad(0))
+PointsT
+RowsT
+ColsT
+6
+rad(0)
+comment 0 0 1 0 1 3 0 1
+    * Convert the images to gray value images.
+Convert the images to gray value images.
+rgb1_to_gray 1 1 0 0 1 1 0 0
+    rgb1_to_gray (ImageF, ImageFG)
+ImageF
+ImageFG
+rgb1_to_gray 1 1 0 0 1 1 0 0
+    rgb1_to_gray (ImageT, ImageTG)
+ImageT
+ImageTG
+comment 0 0 1 0 1 3 0 1
+    * Determine the projective transformation between the images.
+Determine the projective transformation between the images.
+proj_match_points_ransac 2 0 15 3 1 1 0 0
+`    proj_match_points_ransac (ImageFG, ImageTG, RowsF, ColsF, RowsT, ColsT, 'ncc', 8, 0, Width-overlap, 180, 180, [rad(-30),rad(30)], 0.5,\                              'gold_standard', 10, 42, HomMat2D, Points1, Points2)
+ImageFG
+ImageTG
+RowsF
+ColsF
+RowsT
+ColsT
+'ncc'
+8
+0
+Width-overlap
+180
+180
+[rad(-30),rad(30)]
+0.5
+'gold_standard'
+10
+42
+HomMat2D
+Points1
+Points2
+comment 0 0 1 0 1 3 0 1
+    * After this, we accumulate the required data.
+After this, we accumulate the required data.
+assign 0 0 1 1 1 3 0 0
+    HomMatrices2D := [HomMatrices2D,HomMat2D]
+[HomMatrices2D,HomMat2D]
+HomMatrices2D
+assign 0 0 1 1 1 3 0 0
+    Rows1 := [Rows1,subset(RowsF,Points1)]
+[Rows1,subset(RowsF,Points1)]
+Rows1
+assign 0 0 1 1 1 3 0 0
+    Cols1 := [Cols1,subset(ColsF,Points1)]
+[Cols1,subset(ColsF,Points1)]
+Cols1
+assign 0 0 1 1 1 3 0 0
+    Rows2 := [Rows2,subset(RowsT,Points2)]
+[Rows2,subset(RowsT,Points2)]
+Rows2
+assign 0 0 1 1 1 3 0 0
+    Cols2 := [Cols2,subset(ColsT,Points2)]
+[Cols2,subset(ColsT,Points2)]
+Cols2
+assign 0 0 1 1 1 3 0 0
+    NumMatches := [NumMatches,|Points1|]
+[NumMatches,|Points1|]
+NumMatches
+comment 0 0 1 0 1 3 0 1
+    * The rest of the code within the loop visualizes the point matches.
+The rest of the code within the loop visualizes the point matches.
+assign 0 0 1 1 1 3 0 0
+    RF := subset(RowsF,Points1)
+subset(RowsF,Points1)
+RF
+assign 0 0 1 1 1 3 0 0
+    CF := subset(ColsF,Points1)+Width+20
+subset(ColsF,Points1)+Width+20
+CF
+assign 0 0 1 1 1 3 0 0
+    RT := subset(RowsT,Points2)
+subset(RowsT,Points2)
+RT
+assign 0 0 1 1 1 3 0 0
+    CT := subset(ColsT,Points2)
+subset(ColsT,Points2)
+CT
+gen_empty_obj 0 1 0 0 1 1 0 0
+    gen_empty_obj (Matches)
+Matches
+for 0 0 3 1 1 3 0 0
+    for K := 0 to |RF|-1 by 1
+0
+|RF|-1
+1
+K
+gen_contour_polygon_xld 0 1 2 0 2 1 0 0
+        gen_contour_polygon_xld (Match, [RF[K],RT[K]], [CF[K],CT[K]])
+Match
+[RF[K],RT[K]]
+[CF[K],CT[K]]
+concat_obj 2 1 0 0 2 1 0 0
+        concat_obj (Matches, Match, Matches)
+Matches
+Match
+Matches
+endfor 0 0 0 0 1 3 80 0
+    endfor
+dev_clear_window 0 0 0 0 1 2 0 0
+    dev_clear_window ()
+dev_display 1 0 0 0 1 2 0 0
+    dev_display (TiledImage)
+TiledImage
+dev_set_color 0 0 1 0 1 2 0 0
+    dev_set_color ('blue')
+'blue'
+dev_display 1 0 0 0 1 2 0 0
+    dev_display (Matches)
+Matches
+dev_set_color 0 0 1 0 1 2 0 0
+    dev_set_color ('green')
+'green'
+dev_display 1 0 0 0 1 2 0 0
+    dev_display (PointsF)
+PointsF
+dev_display 1 0 0 0 1 2 0 0
+    dev_display (PointsT)
+PointsT
+dev_set_color 0 0 1 0 1 2 0 0
+    dev_set_color ('yellow')
+'yellow'
+set_tposition 0 0 3 0 1 1 0 0
+    set_tposition (WindowHandle, 20, 20)
+WindowHandle
+20
+20
+write_string 0 0 2 0 1 1 0 0
+    write_string (WindowHandle, 'Matches between images '+From[J]$'d'+' and '+To[J]$'d')
+WindowHandle
+'Matches between images '+From[J]$'d'+' and '+To[J]$'d'
+endfor 0 0 0 0 0 3 47 0
+endfor
+dev_clear_window 0 0 0 0 0 2 0 0
+dev_clear_window ()
+dev_set_window_extents 0 0 4 0 0 2 0 0
+dev_set_window_extents (-1, -1, 856, 428)
+-1
+-1
+856
+428
+dev_set_color 0 0 1 0 0 2 0 0
+dev_set_color ('yellow')
+'yellow'
+set_tposition 0 0 3 0 0 1 0 0
+set_tposition (WindowHandle, 20, 20)
+WindowHandle
+20
+20
+write_string 0 0 2 0 0 1 0 0
+write_string (WindowHandle, 'Performing self-calibration...')
+WindowHandle
+'Performing self-calibration...'
+comment 0 0 1 0 0 3 0 1
+* Perform the self-calibration.
+Perform the self-calibration.
+stationary_camera_self_calibration 0 0 15 7 0 1 0 0
+`stationary_camera_self_calibration (4, Width, Height, 1, From, To, HomMatrices2D, Rows1, Cols1, Rows2, Cols2, NumMatches, 'gold_standard', \    ['focus','principal_point','kappa'], 'true', CameraMatrix, Kappa, RotationMatrices, X, Y, Z, Error)
+4
+Width
+Height
+1
+From
+To
+HomMatrices2D
+Rows1
+Cols1
+Rows2
+Cols2
+NumMatches
+'gold_standard'
+['focus','principal_point','kappa']
+'true'
+CameraMatrix
+Kappa
+RotationMatrices
+X
+Y
+Z
+Error
+dev_clear_window 0 0 0 0 0 2 0 0
+dev_clear_window ()
+dev_set_color 0 0 1 0 0 2 0 0
+dev_set_color ('yellow')
+'yellow'
+set_tposition 0 0 3 0 0 1 0 0
+set_tposition (WindowHandle, 20, 20)
+WindowHandle
+20
+20
+write_string 0 0 2 0 0 1 0 0
+write_string (WindowHandle, 'Removing radial distortions...')
+WindowHandle
+'Removing radial distortions...'
+comment 0 0 1 0 0 3 0 1
+* Remove the radial distortions from the images.
+Remove the radial distortions from the images.
+cam_mat_to_cam_par 0 0 4 1 0 1 0 0
+`cam_mat_to_cam_par (CameraMatrix, Kappa, Width, Height, CamParam)
+CameraMatrix
+Kappa
+Width
+Height
+CamParam
+change_radial_distortion_cam_par 0 0 3 1 0 1 0 0
+change_radial_distortion_cam_par ('fixed', CamParam, 0, CamParOut)
+'fixed'
+CamParam
+0
+CamParOut
+gen_radial_distortion_map 0 1 3 0 0 1 0 0
+gen_radial_distortion_map (Map, CamParam, CamParOut, 'bilinear')
+Map
+CamParam
+CamParOut
+'bilinear'
+map_image 2 1 0 0 0 1 0 0
+map_image (Images, Map, Images)
+Images
+Map
+Images
+dev_clear_window 0 0 0 0 0 2 0 0
+dev_clear_window ()
+dev_set_color 0 0 1 0 0 2 0 0
+dev_set_color ('yellow')
+'yellow'
+set_tposition 0 0 3 0 0 1 0 0
+set_tposition (WindowHandle, 20, 20)
+WindowHandle
+20
+20
+write_string 0 0 2 0 0 1 0 0
+write_string (WindowHandle, 'Adjusting the images radiometrically...')
+WindowHandle
+'Adjusting the images radiometrically...'
+comment 0 0 1 0 0 3 0 0
+* Before we adjust the images radiometrically, we compute the perspective
+Before we adjust the images radiometrically, we compute the perspective
+comment 0 0 1 0 0 3 0 0
+* transformations between the images from the camera matrix and the rotation
+transformations between the images from the camera matrix and the rotation
+comment 0 0 1 0 0 3 0 0
+* matrices that are returned by the self-calibration.  They are more accurate
+matrices that are returned by the self-calibration.  They are more accurate
+comment 0 0 1 0 0 3 0 0
+* than the perspective transformations that are returned by the matching
+than the perspective transformations that are returned by the matching
+comment 0 0 1 0 0 3 0 0
+* since they have been optimized over all images.  For details on how the
+since they have been optimized over all images.  For details on how the
+comment 0 0 1 0 0 3 0 0
+* perspective transformation matrices are computed by the code below, see the
+perspective transformation matrices are computed by the code below, see the
+comment 0 0 1 0 0 3 0 0
+* documentation of stationary_camera_self_calibration.
+documentation of stationary_camera_self_calibration.
+hom_mat2d_invert 0 0 1 1 0 1 0 0
+hom_mat2d_invert (CameraMatrix, CameraMatrixInv)
+CameraMatrix
+CameraMatrixInv
+assign 0 0 1 1 0 3 0 0
+PermMat := [0.0,1.0,0.5,1.0,0.0,0.5,0.0,0.0,1.0]
+[0.0,1.0,0.5,1.0,0.0,0.5,0.0,0.0,1.0]
+PermMat
+hom_mat2d_invert 0 0 1 1 0 1 0 0
+hom_mat2d_invert (PermMat, PermMatInv)
+PermMat
+PermMatInv
+hom_mat2d_compose 0 0 2 1 0 1 0 0
+hom_mat2d_compose (CameraMatrixInv, PermMatInv, CamMatPermInv)
+CameraMatrixInv
+PermMatInv
+CamMatPermInv
+hom_mat2d_compose 0 0 2 1 0 1 0 0
+hom_mat2d_compose (PermMat, CameraMatrix, CamMatPerm)
+PermMat
+CameraMatrix
+CamMatPerm
+assign 0 0 1 1 0 3 0 0
+HomMats2D := []
+[]
+HomMats2D
+for 0 0 3 1 0 3 0 0
+for J := 0 to |From|-1 by 1
+0
+|From|-1
+1
+J
+assign 0 0 1 1 1 3 0 0
+    RotMatFrom := RotationMatrices[9*(From[J]-1):9*(From[J]-1)+8]
+RotationMatrices[9*(From[J]-1):9*(From[J]-1)+8]
+RotMatFrom
+assign 0 0 1 1 1 3 0 0
+    RotMatTo := RotationMatrices[9*(To[J]-1):9*(To[J]-1)+8]
+RotationMatrices[9*(To[J]-1):9*(To[J]-1)+8]
+RotMatTo
+hom_mat2d_transpose 0 0 1 1 1 1 0 0
+    hom_mat2d_transpose (RotMatFrom, RotMatFromInv)
+RotMatFrom
+RotMatFromInv
+hom_mat2d_compose 0 0 2 1 1 1 0 0
+    hom_mat2d_compose (RotMatTo, RotMatFromInv, RotMat)
+RotMatTo
+RotMatFromInv
+RotMat
+hom_mat2d_compose 0 0 2 1 1 1 0 0
+    hom_mat2d_compose (RotMat, CamMatPermInv, RotCamMatInv)
+RotMat
+CamMatPermInv
+RotCamMatInv
+hom_mat2d_compose 0 0 2 1 1 1 0 0
+    hom_mat2d_compose (CamMatPerm, RotCamMatInv, HomMat2D)
+CamMatPerm
+RotCamMatInv
+HomMat2D
+assign 0 0 1 1 1 3 0 0
+    HomMats2D := [HomMats2D,HomMat2D]
+[HomMats2D,HomMat2D]
+HomMats2D
+endfor 0 0 0 0 0 3 128 0
+endfor
+comment 0 0 1 0 0 3 0 0
+* Now adjust the images radiometrically.  Since the exposure and white balance
+Now adjust the images radiometrically.  Since the exposure and white balance
+comment 0 0 1 0 0 3 0 0
+* were set to automatic, we calculate 'mult_gray'.  Since the camera is a consumer
+were set to automatic, we calculate 'mult_gray'.  Since the camera is a consumer
+comment 0 0 1 0 0 3 0 0
+* camera and therefore has a highly nonlinear response, we compute 'response'.
+camera and therefore has a highly nonlinear response, we compute 'response'.
+comment 0 0 1 0 0 3 0 0
+* To compensate the vignetting in the images, we compute 'vignetting'. Finally,
+To compensate the vignetting in the images, we compute 'vignetting'. Finally,
+comment 0 0 1 0 0 3 0 0
+* to speed up the optimization, we use a subsampling by a factor of 4.
+to speed up the optimization, we use a subsampling by a factor of 4.
+adjust_mosaic_images 1 1 7 0 0 1 0 0
+`adjust_mosaic_images (Images, CorrectedImages, From, To, 1, HomMats2D, 'gold_standard', ['mult_gray','response','vignetting','subsampling_4'], 'laguerre')
+Images
+CorrectedImages
+From
+To
+1
+HomMats2D
+'gold_standard'
+['mult_gray','response','vignetting','subsampling_4']
+'laguerre'
+comment 0 0 1 0 0 3 0 1
+* Since the reference image was not aligned perfectly horizontally, we modify the
+Since the reference image was not aligned perfectly horizontally, we modify the
+comment 0 0 1 0 0 3 0 1
+* calibrated rotation matrices by rotating them by -5.5 degrees around the x axis.
+calibrated rotation matrices by rotating them by -5.5 degrees around the x axis.
+hom_mat3d_identity 0 0 0 1 0 1 0 0
+hom_mat3d_identity (HomMat3D)
+HomMat3D
+hom_mat3d_rotate 0 0 6 1 0 1 0 0
+hom_mat3d_rotate (HomMat3D, rad(-5.5), 'x', 0, 0, 0, HomMat3D)
+HomMat3D
+rad(-5.5)
+'x'
+0
+0
+0
+HomMat3D
+assign 0 0 1 1 0 3 0 0
+RotMat := [HomMat3D[0:2],HomMat3D[4:6],HomMat3D[8:10]]
+[HomMat3D[0:2],HomMat3D[4:6],HomMat3D[8:10]]
+RotMat
+assign 0 0 1 1 0 3 0 0
+RotMats := []
+[]
+RotMats
+for 0 0 3 1 0 3 0 0
+`for J := 0 to 3 by 1
+0
+3
+1
+J
+assign 0 0 1 1 1 3 0 0
+    RotMatCalib := RotationMatrices[J*9:J*9+8]
+RotationMatrices[J*9:J*9+8]
+RotMatCalib
+hom_mat2d_compose 0 0 2 1 1 1 0 0
+    hom_mat2d_compose (RotMatCalib, RotMat, RotMatRot)
+RotMatCalib
+RotMat
+RotMatRot
+assign 0 0 1 1 1 3 0 0
+    RotMats := [RotMats,RotMatRot]
+[RotMats,RotMatRot]
+RotMats
+endfor 0 0 0 0 0 3 149 0
+endfor
+dev_clear_window 0 0 0 0 0 2 0 0
+dev_clear_window ()
+dev_set_color 0 0 1 0 0 2 0 0
+dev_set_color ('yellow')
+'yellow'
+set_tposition 0 0 3 0 0 1 0 0
+set_tposition (WindowHandle, 20, 20)
+WindowHandle
+20
+20
+write_string 0 0 2 0 0 1 0 0
+write_string (WindowHandle, 'Creating spherical mosaic of the original images...')
+WindowHandle
+'Creating spherical mosaic of the original images...'
+comment 0 0 1 0 0 3 0 1
+* Create the spherical mosaic of the original images.
+Create the spherical mosaic of the original images.
+gen_spherical_mosaic 1 1 9 0 0 1 0 0
+`gen_spherical_mosaic (Images, SphericalMosaicOrig, CameraMatrix, RotMats, -45, 45, -90, 90, 0, 'voronoi', 'bilinear')
+Images
+SphericalMosaicOrig
+CameraMatrix
+RotMats
+-45
+45
+-90
+90
+0
+'voronoi'
+'bilinear'
+get_image_pointer1 1 0 0 4 0 1 0 0
+get_image_pointer1 (SphericalMosaicOrig, Pointer, Type, Width, Height)
+SphericalMosaicOrig
+Pointer
+Type
+Width
+Height
+dev_set_part 0 0 4 0 0 2 0 0
+dev_set_part (0, 0, Height-1, Width-1)
+0
+0
+Height-1
+Width-1
+dev_clear_window 0 0 0 0 0 2 0 0
+dev_clear_window ()
+dev_display 1 0 0 0 0 2 0 0
+dev_display (SphericalMosaicOrig)
+SphericalMosaicOrig
+dev_set_color 0 0 1 0 0 2 0 0
+dev_set_color ('yellow')
+'yellow'
+set_tposition 0 0 3 0 0 1 0 0
+set_tposition (WindowHandle, Height-300, 20)
+WindowHandle
+Height-300
+20
+write_string 0 0 2 0 0 1 0 0
+write_string (WindowHandle, 'Spherical mosaic of the original images')
+WindowHandle
+'Spherical mosaic of the original images'
+set_tposition 0 0 3 0 0 1 0 0
+set_tposition (WindowHandle, Height-150, 20)
+WindowHandle
+Height-150
+20
+write_string 0 0 2 0 0 1 0 0
+write_string (WindowHandle, 'Press \'Run\' to continue')
+WindowHandle
+'Press \'Run\' to continue'
+stop 0 0 0 0 0 3 0 0
+stop ()
+dev_clear_window 0 0 0 0 0 2 0 0
+dev_clear_window ()
+dev_set_color 0 0 1 0 0 2 0 0
+dev_set_color ('yellow')
+'yellow'
+set_tposition 0 0 3 0 0 1 0 0
+set_tposition (WindowHandle, 20, 20)
+WindowHandle
+20
+20
+write_string 0 0 2 0 0 1 0 0
+write_string (WindowHandle, 'Creating spherical mosaic of the radiometrically adjusted images...')
+WindowHandle
+'Creating spherical mosaic of the radiometrically adjusted images...'
+comment 0 0 1 0 0 3 0 1
+* Create the spherical mosaic of the radiometrically adjusted images.
+Create the spherical mosaic of the radiometrically adjusted images.
+gen_spherical_mosaic 1 1 9 0 0 1 0 0
+gen_spherical_mosaic (CorrectedImages, SphericalMosaicAdjust, CameraMatrix, RotMats, -90, 90, -180, 180, 0, 'voronoi', 'bilinear')
+CorrectedImages
+SphericalMosaicAdjust
+CameraMatrix
+RotMats
+-90
+90
+-180
+180
+0
+'voronoi'
+'bilinear'
+get_image_pointer1 1 0 0 4 0 1 0 0
+get_image_pointer1 (SphericalMosaicAdjust, Pointer, Type, Width, Height)
+SphericalMosaicAdjust
+Pointer
+Type
+Width
+Height
+dev_set_part 0 0 4 0 0 2 0 0
+dev_set_part (0, 0, Height-1, Width-1)
+0
+0
+Height-1
+Width-1
+dev_clear_window 0 0 0 0 0 2 0 0
+dev_clear_window ()
+dev_display 1 0 0 0 0 2 0 0
+dev_display (SphericalMosaicAdjust)
+SphericalMosaicAdjust
+dev_set_color 0 0 1 0 0 2 0 0
+dev_set_color ('yellow')
+'yellow'
+set_tposition 0 0 3 0 0 1 0 0
+set_tposition (WindowHandle, Height-300, 20)
+WindowHandle
+Height-300
+20
+write_string 0 0 2 0 0 1 0 0
+write_string (WindowHandle, 'Spherical mosaic of the radiometrically adjusted images')
+WindowHandle
+'Spherical mosaic of the radiometrically adjusted images'
+set_tposition 0 0 3 0 0 1 0 0
+set_tposition (WindowHandle, Height-150, 20)
+WindowHandle
+Height-150
+20
+write_string 0 0 2 0 0 1 0 0
+write_string (WindowHandle, 'Press \'Run\' to continue')
+WindowHandle
+'Press \'Run\' to continue'
+stop 0 0 0 0 0 3 0 0
+stop ()
+dev_clear_window 0 0 0 0 0 2 0 0
+dev_clear_window ()
+dev_set_color 0 0 1 0 0 2 0 0
+dev_set_color ('yellow')
+'yellow'
+set_tposition 0 0 3 0 0 1 0 0
+set_tposition (WindowHandle, 20, 20)
+WindowHandle
+20
+20
+write_string 0 0 2 0 0 1 0 0
+write_string (WindowHandle, 'Creating blended spherical mosaic of the radiometrically adjusted images...')
+WindowHandle
+'Creating blended spherical mosaic of the radiometrically adjusted images...'
+comment 0 0 1 0 0 3 0 1
+* Create the blended spherical mosaic of the radiometrically adjusted images.
+Create the blended spherical mosaic of the radiometrically adjusted images.
+gen_spherical_mosaic 1 1 9 0 0 1 0 0
+gen_spherical_mosaic (CorrectedImages, SphericalMosaicAdjustBlend, CameraMatrix, RotMats, -90, 90, -180, 180, 0, 'blend', 'bilinear')
+CorrectedImages
+SphericalMosaicAdjustBlend
+CameraMatrix
+RotMats
+-90
+90
+-180
+180
+0
+'blend'
+'bilinear'
+get_image_pointer1 1 0 0 4 0 1 0 0
+get_image_pointer1 (SphericalMosaicAdjustBlend, Pointer, Type, Width, Height)
+SphericalMosaicAdjustBlend
+Pointer
+Type
+Width
+Height
+dev_set_part 0 0 4 0 0 2 0 0
+dev_set_part (0, 0, Height-1, Width-1)
+0
+0
+Height-1
+Width-1
+dev_clear_window 0 0 0 0 0 2 0 0
+dev_clear_window ()
+dev_display 1 0 0 0 0 2 0 0
+dev_display (SphericalMosaicAdjustBlend)
+SphericalMosaicAdjustBlend
+dev_set_color 0 0 1 0 0 2 0 0
+dev_set_color ('yellow')
+'yellow'
+set_tposition 0 0 3 0 0 1 0 0
+set_tposition (WindowHandle, Height-300, 20)
+WindowHandle
+Height-300
+20
+write_string 0 0 2 0 0 1 0 0
+write_string (WindowHandle, 'Blended spherical mosaic of the radiometrically adjusted images')
+WindowHandle
+'Blended spherical mosaic of the radiometrically adjusted images'
