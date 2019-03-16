@@ -9,6 +9,7 @@
 /thirdparty/googletest-release-1.8.1
 /thirdparty/opencv-4.0.1
 /thirdparty/opencv_contrib-4.0.1
+/thirdparty/hugin-2018.0.0
 /thirdparty/install_*
 /thirdparty/*.zip
 /thirdparty/*.tar.gz
