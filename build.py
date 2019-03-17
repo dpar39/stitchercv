@@ -25,6 +25,7 @@ except ImportError:   # Fall back to Python 2's urllib2
 OPENCV_SRC_URL = 'https://github.com/opencv/opencv/archive/4.0.1.zip'
 OPENCVCONTRIB_SRC_URL = 'https://github.com/opencv/opencv_contrib/archive/4.0.1.zip'
 GMOCK_SRC_URL = 'https://github.com/google/googletest/archive/release-1.8.1.zip'
+HUGIN_SRC = 'https://ayera.dl.sourceforge.net/project/hugin/hugin/hugin-2018.0/hugin-2018.0.0.tar.bz2'
 
 IS_WINDOWS = sys.platform == 'win32'
 if sys.platform == 'win32':
@@ -119,7 +120,7 @@ class ShellRunner(object):
         if cmd_print:
             print(' '.join(cmd_args))
 
-        p = subprocess.Popen(cmd_all, env=self._env, cwd=cwd, shell=True,
+        p = subprocess.Popen(cmd_all, env=self._env, cwd=cwd, shell=False,
                              stderr=subprocess.STDOUT, stdin=subprocess.PIPE)
         if input:
             p.communicate(input=input)
@@ -214,6 +215,28 @@ class Builder(object):
         with open(solution_file, "w") as file_handle:
             file_handle.writelines(["%s\n" % item for item in prj_lines])
 
+    def build_hugin(self):
+        """
+        Extract and build GMock/GTest libraries
+        """
+        if os.path.isfile(os.path.join(self._third_party_install_dir, 'lib/hugin/libhuginbase.so.0.0')):
+            return  # We have Gtest installed
+        # Download googletest sources if not done yet
+        gmock_src_pkg = self.download_third_party_lib(HUGIN_SRC, 'hugin.tar.gz')
+        # Get the file prefix for googletest
+        gmock_extract_dir = self.get_third_party_lib_dir('hugin-')
+        if gmock_extract_dir is None:
+            # Extract the source files
+            self.extract_third_party_lib(gmock_src_pkg)
+            gmock_extract_dir = self.get_third_party_lib_dir('hugin-')
+        # Build GoogleTest/GoogleMock and install
+        cmake_extra_defs = [
+            '-DCMAKE_INSTALL_PREFIX=' + self._third_party_install_dir,
+            '-DBUILD_HSI:BOOL=OFF',
+            '-DBUILD_HPI:BOOL=OFF'
+        ]
+        self.build_cmake_lib(gmock_extract_dir, cmake_extra_defs, ['install'])
+
     def build_googletest(self):
         """
         Extract and build GMock/GTest libraries
@@ -223,14 +246,15 @@ class Builder(object):
         # Download googletest sources if not done yet
         gmock_src_pkg = self.download_third_party_lib(GMOCK_SRC_URL, 'googletest.zip')
         # Get the file prefix for googletest
-        gmock_extract_dir = self.get_third_party_lib_dir('googletest')
+        gmock_extract_dir = self.get_third_party_lib_dir('googletest-')
         if gmock_extract_dir is None:
             # Extract the source files
             self.extract_third_party_lib(gmock_src_pkg)
-            gmock_extract_dir = self.get_third_party_lib_dir('googletest')
+            gmock_extract_dir = self.get_third_party_lib_dir('googletest-')
         # Build GoogleTest/GoogleMock and install
         cmake_extra_defs = [
             '-DCMAKE_INSTALL_PREFIX=' + self._third_party_install_dir,
+
         ]
         self.build_cmake_lib(gmock_extract_dir, cmake_extra_defs, ['install'])
 
@@ -475,6 +499,7 @@ class Builder(object):
         # Build Third Party Libs
         self.build_googletest()
         self.build_opencv()
+        self.build_hugin()
 
         # Build this project for a desktop platform (Windows or Unix-based OS)
         self.build_cpp_code()
