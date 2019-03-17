@@ -24,7 +24,6 @@ void Stitcher::processVideo(const std::string & inputVideoFile)
 {
     cv::VideoCapture cap(inputVideoFile);
 
-    auto x = cap.get(cv::CAP_PROP_FOURCC);
     if (!cap.isOpened())
     {
         return;
@@ -85,7 +84,7 @@ void Stitcher::splitInputImage(const cv::Mat & frame)
 
 cv::Mat Stitcher::computeHomography(const cv::Mat & leftImage, const cv::Mat & rightImage)
 {
-    cv::Mat grayPart;
+    cv::Mat grayPartLeft, grayPartRight;
 
     const auto horizontalOverlap = static_cast<int>(ceil((1080.f * 4 - 3648) / 3.f)); // ~20% overlap
 
@@ -104,13 +103,14 @@ cv::Mat Stitcher::computeHomography(const cv::Mat & leftImage, const cv::Mat & r
         m_rightImageMask(cv::Rect(0, 0, horizontalOverlap, height)) = 1;
     }
 
-    cv::cvtColor(leftImage, grayPart, cv::COLOR_BGR2GRAY);
+    cv::cvtColor(leftImage, grayPartLeft, cv::COLOR_BGR2GRAY);
+    cv::cvtColor(rightImage, grayPartRight, cv::COLOR_BGR2GRAY);
 
     std::vector<KeyPoint> keyPointsLeft, keyPointsRight;
     cv::Mat descriptorsLeft, descriptorsRight;
 
-    m_sift->detectAndCompute(leftImage, m_leftImageMask, keyPointsLeft, descriptorsLeft);
-    m_sift->detectAndCompute(rightImage, m_rightImageMask, keyPointsRight, descriptorsRight);
+    m_sift->detectAndCompute(grayPartLeft, m_leftImageMask, keyPointsLeft, descriptorsLeft);
+    m_sift->detectAndCompute(grayPartRight, m_rightImageMask, keyPointsRight, descriptorsRight);
 
     const auto matcher = DescriptorMatcher::create(DescriptorMatcher::BRUTEFORCE);
     std::vector<std::vector<DMatch>> knnMatches;
